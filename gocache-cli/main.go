@@ -7,14 +7,20 @@ import (
 	"io"
 	"net"
 	"os"
+	"os/exec"
 	"strings"
 	"time"
 
 	"github.com/oswaldoooo/octools/toolsbox"
 )
 
+const (
+	DEFAULT_DB = "origin_data"
+)
+
 var address string
 var ROOTPATH = os.Getenv("GOCACHECLI_HOME")
+var default_db = DEFAULT_DB
 
 const (
 	KB = 1024
@@ -43,14 +49,44 @@ func main() {
 	}
 	mes := new(Message)
 	acp := new(ReplayStatus)
+	mes.DB = default_db
 	var buff = make([]byte, 10*KB)
 	for {
-		mes = &Message{}
+		mes.Act = -1
+		mes.Key = ""
+		mes.Value = nil
 		acp = &ReplayStatus{}
 		fmt.Print("console-> ")
 		read := bufio.NewReader(os.Stdout)
 		msg, _ := read.ReadString('\n')
 		msg = strings.TrimSpace(msg)
+		//以下命令不发送,为本地命令
+		msgarr := strings.Split(msg, " ")
+		switch msgarr[0] {
+		case "use":
+			if len(msgarr) == 2 {
+				mes.DB = msgarr[1]
+			}
+			goto passthroug
+		case "show":
+			if len(msgarr) == 2 && msgarr[1] == "db" {
+				fmt.Println("current database", mes.DB)
+			}
+			goto passthroug
+		case "clear":
+			if len(msgarr) == 1 {
+				cmd := exec.Command("clear")
+				cmd.Stdout = os.Stdout
+				err = cmd.Run()
+
+				if err != nil {
+					fmt.Println(err)
+				}
+			} else {
+				fmt.Println("unknown command")
+			}
+			goto passthroug
+		}
 		err = Pack(msg, mes)
 		if err != nil {
 			fmt.Println(err)
@@ -66,15 +102,16 @@ func main() {
 				case 500:
 					goto senddata
 				case 200:
-					if mes.Act == 2 {
+					if mes.Act == 2 || mes.Act == 21 {
 						fmt.Println(string(acp.Content))
 					}
 					continue
 				case 400:
-					fmt.Println("error 400")
+					fmt.Println("error 400", string(acp.Content))
 				}
 			}
 		}
+	passthroug:
 	}
 }
 func checkonline(con net.Conn) {
@@ -109,15 +146,44 @@ func Pack(msg string, mes *Message) error {
 		}
 		mes.Key = msgarr[1]
 		mes.Act = 2
-	case "delete":
+	case "match":
 		if len(msgarr) != 2 {
 			return fmt.Errorf("args not correct")
 		}
 		mes.Key = msgarr[1]
+		mes.Act = 21
+	case "delete":
+		if len(msgarr) < 2 {
+			return fmt.Errorf("args not correct")
+		}
+		mes.Key = strings.Join(msgarr[1:], " ")
 		mes.Act = 3
+	case "create":
+		if len(msgarr) == 2 {
+			mes.DB = msgarr[1]
+			mes.Act = 10
+		} else {
+			return fmt.Errorf("args not correct")
+		}
+	case "save":
+		if len(msgarr) == 1 {
+			mes.Act = 20
+		} else {
+			return fmt.Errorf("args not correct")
+		}
+	case "drop":
+		if len(msgarr) == 1 && mes.DB != DEFAULT_DB {
+			mes.Act = 30
+		} else if len(msgarr) == 1 && mes.DB == DEFAULT_DB {
+			return fmt.Errorf("cant delete main db")
+		} else {
+			return fmt.Errorf("unknown command")
+		}
 	case "exit":
 		fmt.Println("bye")
 		os.Exit(1)
+	default:
+		fmt.Println("unknown command")
 	}
 	return nil
 
@@ -142,6 +208,7 @@ func ReadReply(con net.Conn, buff []byte, rsp *ReplayStatus) {
 
 // accept msg
 type Message struct {
+	DB    string `json:"db"`
 	Key   string `json:"key"`
 	Value []byte `json:"value"`
 	Act   int    `json:"act"`

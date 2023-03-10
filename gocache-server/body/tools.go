@@ -2,7 +2,7 @@ package body
 
 import (
 	"encoding/json"
-	"gocache/basic"
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -26,13 +26,13 @@ func findtype(value string) (tp string) {
 }
 
 // save data from cache to disk
-func Save(data map[string]*basic.Cell) {
-	res, err := json.Marshal(data)
+func Save(dbinfo *CustomDb) {
+	res, err := json.Marshal(&dbinfo.Cellmap)
 	if err != nil {
 		errorlog.Println(err)
 		return
 	}
-	fe, err := os.OpenFile(datapath+"origin_data.gc", os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0700)
+	fe, err := os.OpenFile(datapath+dbinfo.Name+".gc", os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0700)
 	if err != nil {
 		errorlog.Println(err)
 		return
@@ -41,5 +41,35 @@ func Save(data map[string]*basic.Cell) {
 	if err != nil {
 		errorlog.Println(err)
 		return
+	}
+}
+func getDB(dbname string) (*CustomDb, error) {
+	if len(dbname) < 1 {
+		return nil, fmt.Errorf("database name is empty")
+	} else if _, ok := customdb[dbname]; !ok && dbname != "origin_data" {
+		return nil, fmt.Errorf(dbname, "dont exist")
+	} else if dbname == "origin_data" {
+		return globaldb, nil
+	} else if ve, ok := customdb[dbname]; ok {
+		return ve, nil
+	} else {
+		return nil, fmt.Errorf("unknown error")
+	}
+}
+
+// 检查数据库在硬盘上是否存在
+func checkorigindb(allpath string) bool {
+	if _, err := os.Stat(allpath); err == nil {
+		return true
+	}
+	return false
+}
+func RemoveDBfromDisk(dbinfo *CustomDb) error {
+	allpath := datapath + dbinfo.Name + ".gc"
+	if checkorigindb(allpath) {
+		err := os.Remove(allpath)
+		return err
+	} else {
+		return nil
 	}
 }

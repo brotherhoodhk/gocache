@@ -1,8 +1,9 @@
 package body
 
 import (
-	"bytes"
-	"encoding/binary"
+	"fmt"
+	"gocache/basic"
+	"strconv"
 )
 
 type String struct {
@@ -21,12 +22,8 @@ type Integer struct {
 }
 
 func (s *Integer) GetBytes() []byte {
-	bytesbuff := bytes.NewBuffer([]byte{})
-	err := binary.Write(bytesbuff, binary.BigEndian, s.int)
-	if err != nil {
-		return nil
-	}
-	return bytesbuff.Bytes()
+	origin := strconv.Itoa(s.int)
+	return []byte(origin)
 }
 func (s *Integer) Type() string {
 	return "integer"
@@ -37,12 +34,7 @@ type Boolean struct {
 }
 
 func (s *Boolean) GetBytes() []byte {
-	bytesbuff := bytes.NewBuffer([]byte{})
-	err := binary.Write(bytesbuff, binary.BigEndian, s.bool)
-	if err != nil {
-		return nil
-	}
-	return bytesbuff.Bytes()
+	return []byte(strconv.FormatBool(s.bool))
 }
 func (s *Boolean) Type() string {
 	return "boolean"
@@ -53,19 +45,25 @@ type Float struct {
 }
 
 func (s *Float) GetBytes() []byte {
-	bytesbuff := bytes.NewBuffer([]byte{})
-	err := binary.Write(bytesbuff, binary.BigEndian, s.float64)
-	if err != nil {
-		return nil
-	}
-	return bytesbuff.Bytes()
+	return []byte(fmt.Sprintf("%f", s.float64))
 }
 func (s *Float) Type() string {
 	return "float"
 }
 
+type CustomDb struct {
+	Cellmap         map[string]*basic.Cell
+	MapContaierSize int
+	Name            string
+}
+
+func NewCustomDB(dbname string) *CustomDb {
+	return &CustomDb{Cellmap: make(map[string]*basic.Cell), MapContaierSize: 5, Name: dbname}
+}
+
 // accept msg
 type Message struct {
+	DB    string `json:"db"`
 	Key   string `json:"key"`
 	Value []byte `json:"value"`
 	Act   int    `json:"act"`
@@ -75,4 +73,10 @@ type Message struct {
 type ReplayStatus struct {
 	Content    []byte `json:"content"`
 	StatusCode int    `json:"code"`
+}
+
+// 应用于批量数据
+type ReplayStatusVtwo struct {
+	Content    map[string]any `json:"content"`
+	StatusCode int            `json:"code"`
 }
