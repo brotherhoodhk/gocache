@@ -73,3 +73,18 @@ func RemoveDBfromDisk(dbinfo *CustomDb) error {
 		return nil
 	}
 }
+
+func GetKeyContain(subkey string, dbinfo *CustomDb) (res []byte, err error) {
+	resmap := make(map[string][]byte)
+	for key, value := range dbinfo.Cellmap {
+		if strings.Contains(key, subkey) {
+			resmap[key] = value.GetValue()
+		}
+	}
+	if len(resmap) > 0 {
+		res, err = json.Marshal(&resmap)
+	} else {
+		err = fmt.Errorf("no key contain %v", subkey)
+	}
+	return
+}

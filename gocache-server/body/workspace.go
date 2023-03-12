@@ -1,6 +1,7 @@
 package body
 
 import (
+	"encoding/json"
 	"fmt"
 	"gocache/basic"
 	"strconv"
@@ -64,6 +65,38 @@ func GetKey(key string, dbinfo *CustomDb) []byte {
 		return nil
 	}
 }
+
+// return string slice
+func GetKeys(keys string, dbinfo *CustomDb) (resbytes []byte) {
+	resstr := []string{}
+	if strings.ContainsRune(keys, ' ') {
+		keysarr := strings.Split(keys, " ")
+		var buffres []byte
+		for _, ve := range keysarr {
+			if len(ve) > 0 {
+				buffres = GetKey(ve, dbinfo)
+				if buffres != nil {
+					resstr = append(resstr, string(buffres))
+				}
+			}
+		}
+	} else {
+		resstr = append(resstr, string(GetKey(keys, dbinfo)))
+	}
+	tibytes, err := json.Marshal(&resstr)
+	if err == nil {
+		resbytes = tibytes
+	}
+	return
+}
+func GetAllKeysInterface(dbinfo *CustomDb) (res []byte) {
+	resmap := make(map[string][]byte)
+	for k, _ := range dbinfo.Cellmap {
+		resmap[k] = GetKey(k, dbinfo)
+	}
+	res, _ = json.Marshal(&resmap)
+	return
+}
 func GetAllKeys(dbinfo *CustomDb) []byte {
 	res := []byte{}
 	for k, _ := range dbinfo.Cellmap {
@@ -116,7 +149,7 @@ func ClearAllKeys(dbinfo *CustomDb) {
 func FuzzyMatch(target string, dbinfo *CustomDb) []byte {
 	res := []byte{}
 	for k, _ := range dbinfo.Cellmap {
-		if datastore.Comparestr(k, target) {
+		if datastore.Comparestr(k, target, 50) {
 			newres := fmt.Sprintf("%-60v %v", k, string(GetKey(k, dbinfo)))
 			res = append(res, []byte(newres)...)
 			res = append(res, '\n')

@@ -43,6 +43,7 @@ func main() {
 		if err != nil {
 			errorlog.Println(err)
 		}
+		defer con.Close()
 		go body.Process(con)
 	}
 }
