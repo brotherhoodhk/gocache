@@ -6,8 +6,6 @@ import (
 	"gocache/basic"
 	"strconv"
 	"strings"
-
-	"github.com/oswaldoooo/octools/datastore"
 )
 
 func SaveValue(key string, value string, typeinfo string, dbinfo *CustomDb) error {
@@ -149,7 +147,7 @@ func ClearAllKeys(dbinfo *CustomDb) {
 func FuzzyMatch(target string, dbinfo *CustomDb) []byte {
 	res := []byte{}
 	for k, _ := range dbinfo.Cellmap {
-		if datastore.Comparestr(k, target, 50) {
+		if basic.Default_Fuzzy_Match_Func(target, k) {
 			newres := fmt.Sprintf("%-60v %v", k, string(GetKey(k, dbinfo)))
 			res = append(res, []byte(newres)...)
 			res = append(res, '\n')
@@ -166,4 +164,11 @@ func CreateDB(dbname string) bool {
 	} else {
 		return false
 	}
+}
+
+// load the target site configure file
+func LoadConf(filename string) (err error) {
+	filepath := ROOTPATH + "/conf/" + filename
+	err = basic.ReadConf(filepath)
+	return
 }

@@ -2,6 +2,7 @@ package body
 
 import (
 	"fmt"
+	"gocache/basic"
 
 	"github.com/oswaldoooo/octools/toolsbox"
 )
@@ -137,6 +138,28 @@ func processmsg(msg *Message) ([]byte, int, error) {
 			}
 		}
 		return nil, 400, err
+	case 90:
+		//加载配置文件
+		var err error
+		if len(msg.Key) < 5 {
+			err = fmt.Errorf("site configure file name is not correct")
+		} else {
+			err = LoadConf(msg.Key)
+		}
+		if err != nil {
+			return nil, 400, err
+		}
+		return nil, 200, nil
+	case 901:
+		//load plugin list
+		basic.LoadPluginList()
+		return nil, 200, nil
+	default:
+		if basic.IsOpenExtensions {
+			if addfunc, ok := basic.AddtionalCommand[msg.Act]; ok {
+				return addfunc(msg.Key, msg.DB, msg.Value)
+			}
+		}
 	}
 	return nil, 400, fmt.Errorf("unknown command")
 }

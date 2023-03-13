@@ -3,26 +3,14 @@ package body
 import (
 	"encoding/json"
 	"fmt"
+	"gocache/basic"
 	"os"
-	"strconv"
 	"strings"
 )
 
 // find the value's type
 func findtype(value string) (tp string) {
-	var ere error
-	if _, ere = strconv.ParseFloat(value, 10); strings.ContainsRune(value, '.') && ere == nil {
-		//it's float
-		return "float"
-	} else if _, ere = strconv.Atoi(value); ere == nil {
-		//it's integer
-		return "integer"
-	} else if strings.ToLower(value) == "true" || strings.ToLower(value) == "false" {
-		//it's boolean
-		return "boolean"
-	} else {
-		return "string"
-	}
+	return basic.Default_Get_Type_Func(value)
 }
 
 // save data from cache to disk

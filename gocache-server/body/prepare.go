@@ -3,13 +3,11 @@ package body
 import (
 	"bufio"
 	"encoding/json"
-	"encoding/xml"
 	"fmt"
+	"github.com/oswaldoooo/octools/toolsbox"
 	"io/ioutil"
 	"os"
 	"strings"
-
-	"github.com/oswaldoooo/octools/toolsbox"
 )
 
 var ballast = make([]byte, 300*MB)
@@ -21,9 +19,10 @@ var datapath = ROOTPATH + "/data/"
 var keymaxlength = 60
 var customdb = make(map[string]*CustomDb) //db
 func init() {
+	fmt.Println("==========start init main zone==========")
 	_, err := os.Stat(ROOTPATH + "/data")
 	if err != nil {
-		// fmt.Println("data directory dont find")
+		fmt.Println("data directory dont find")
 		os.Exit(1)
 	}
 	buff := make([]byte, cachebuffsize)
@@ -38,7 +37,7 @@ func init() {
 		cellmap := globaldb.Cellmap
 		err = json.Unmarshal(buff[:lang], &cellmap)
 		if err != nil {
-			fmt.Println("data broken")
+			fmt.Println("main data broken")
 			errorlog.Println(err)
 		}
 		globaldb.Cellmap = cellmap
@@ -74,24 +73,4 @@ func init() {
 	if err != nil {
 		errorlog.Println(err)
 	}
-	//read configure file
-	content, err := ioutil.ReadFile(ROOTPATH + "/conf/conf.xml")
-	if err == nil {
-		conf := new(confinfo)
-		err = xml.Unmarshal(content, conf)
-		if err == nil {
-			for _, plugins := range conf.Plugins {
-
-			}
-		}
-	}
-}
-
-type confinfo struct {
-	XMLName xml.Name `xml:"gocache"`
-	Plugins []struct {
-		XMLName  xml.Name `xml:"plugin"`
-		Class    string   `xml:"classname"`
-		FileName string   `xml:"filename"`
-	} `xml:"plugins"`
 }
