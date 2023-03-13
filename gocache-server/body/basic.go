@@ -80,3 +80,6 @@ type ReplayStatusVtwo struct {
 	Content    map[string]any `json:"content"`
 	StatusCode int            `json:"code"`
 }
+
+// set default fuzzy match method
+var Default_Fuzzy_Match func(string, *CustomDb) []byte = FuzzyMatch

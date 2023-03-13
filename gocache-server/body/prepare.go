@@ -3,6 +3,7 @@ package body
 import (
 	"bufio"
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -73,4 +74,24 @@ func init() {
 	if err != nil {
 		errorlog.Println(err)
 	}
+	//read configure file
+	content, err := ioutil.ReadFile(ROOTPATH + "/conf/conf.xml")
+	if err == nil {
+		conf := new(confinfo)
+		err = xml.Unmarshal(content, conf)
+		if err == nil {
+			for _, plugins := range conf.Plugins {
+
+			}
+		}
+	}
+}
+
+type confinfo struct {
+	XMLName xml.Name `xml:"gocache"`
+	Plugins []struct {
+		XMLName  xml.Name `xml:"plugin"`
+		Class    string   `xml:"classname"`
+		FileName string   `xml:"filename"`
+	} `xml:"plugins"`
 }
