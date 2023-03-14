@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gocache>
+    <plugins>
+        <plugin>
+            <classname></classname>
+            <filename></filename>
+        </plugin>
+    </plugins>
+    <paths>
+        <!-- common path that gocache-cli can also read -->
+        <common_path></common_path>
+        <!-- other config file path -->
+        <other_conf>
+            <conf_path></conf_path>
+            <conf_path></conf_path>
+        </other_conf>
+    </paths>
+    <!-- isopen addtional extensions ? -->
+    <extensions>true</extensions>
+    <!-- gocache listen port -->
+    <port>8001</port>
+</gocache>

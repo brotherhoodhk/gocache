@@ -73,6 +73,7 @@ type Message struct {
 type ReplayStatus struct {
 	Content    []byte `json:"content"`
 	StatusCode int    `json:"code"`
+	Type       string `json:"type"`
 }
 
 // 应用于批量数据
