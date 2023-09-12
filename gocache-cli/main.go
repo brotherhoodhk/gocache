@@ -96,7 +96,11 @@ func main() {
 				fmt.Println(err)
 			} else {
 			senddata:
-				con.Write(sendbytes)
+				_, err = con.Write(sendbytes)
+				if err != nil {
+					fmt.Println("\n[error] lost connection with host")
+					os.Exit(1)
+				}
 				ReadReply(con, buff, acp)
 				switch acp.StatusCode {
 				case 500:
@@ -195,6 +199,7 @@ func ReadReply(con net.Conn, buff []byte, rsp *ReplayStatus) {
 			fmt.Println("warn: connection closed")
 			os.Exit(2)
 		}
+		rsp.StatusCode = 400
 		fmt.Println(err)
 		con.Close()
 		return

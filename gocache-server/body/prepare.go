@@ -4,10 +4,11 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"github.com/oswaldoooo/octools/toolsbox"
 	"io/ioutil"
 	"os"
 	"strings"
+
+	"github.com/oswaldoooo/octools/toolsbox"
 )
 
 var ballast = make([]byte, 300*MB)
@@ -29,7 +30,8 @@ func init() {
 	fe, err := os.OpenFile(ROOTPATH+"/data/origin_data.gc", os.O_RDONLY, 0700)
 	if err == nil {
 		defer fe.Close()
-		lang, err := fe.Read(buff)
+		reader := bufio.NewReader(fe)
+		lang, err := reader.Read(buff)
 		if err != nil {
 			errorlog.Println(err)
 			fmt.Println("read data from disk failed")

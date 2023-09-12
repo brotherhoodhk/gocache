@@ -3,13 +3,14 @@ package main
 import (
 	"encoding/xml"
 	"fmt"
+	"github.com/oswaldoooo/octools/toolsbox"
 	"gocache/body"
 	"io/ioutil"
 	"net"
+	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"strconv"
-
-	"github.com/oswaldoooo/octools/toolsbox"
 )
 
 var listenport = 8001
@@ -22,11 +23,6 @@ type confinfo struct {
 }
 
 func init() {
-	// baselist, err := toolsbox.ParseList(ROOTPATH + "/conf/site.cnf")
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	os.Exit(-1)
-	// }
 	fmt.Println("==========start init external interface==========")
 	content, err := ioutil.ReadFile(ROOTPATH + "/conf/conf.xml")
 	if err == nil {
@@ -44,16 +40,6 @@ func init() {
 	} else {
 		fmt.Println("open conf.xml failed", err)
 	}
-	// if port, ok := baselist["port"]; ok {
-	// 	realport, err := strconv.Atoi(port)
-	// 	if err == nil {
-	// 		listenport = realport
-	// 	} else {
-	// 		fmt.Println(port, "is not correct number,gocache will use default port")
-	// 	}
-	// } else {
-	// 	fmt.Println("site not configure listen port,gocache will use default port")
-	// }
 }
 func main() {
 	listener, err := net.Listen("tcp", ":"+strconv.Itoa(listenport))
@@ -61,6 +47,7 @@ func main() {
 		fmt.Println(err)
 		return
 	}
+	go http.ListenAndServe(":9999", nil)
 	fmt.Println("start listen at ", listenport)
 	for {
 		con, err := listener.Accept()
