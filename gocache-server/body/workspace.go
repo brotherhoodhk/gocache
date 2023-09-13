@@ -12,41 +12,43 @@ func SaveValue(key string, value string, typeinfo string, dbinfo *CustomDb) erro
 	if len(key) > keymaxlength {
 		key = key[:keymaxlength]
 	}
-	cellmap := dbinfo.Cellmap
-	BaseMapSize := dbinfo.MapContaierSize
+	cellmap := &dbinfo.Cellmap
+	BaseMapSize := &dbinfo.MapContaierSize
+	dbinfo.Mutex.Lock()
+	defer dbinfo.Mutex.Unlock()
 	switch typeinfo {
 	case "string", "str":
-		cellmap[key] = basic.NewCell(&String{value})
+		(*cellmap)[key] = basic.NewCell(&String{value})
 	case "integer", "int":
 		num, err := strconv.Atoi(value)
 		if err != nil {
 			return fmt.Errorf(value, "is not integer number")
 		}
-		cellmap[key] = basic.NewCell(&Integer{num})
+		(*cellmap)[key] = basic.NewCell(&Integer{num})
 	case "float":
 		num, err := strconv.ParseFloat(value, 10)
 		if err != nil {
 			return fmt.Errorf(value, "is not float number")
 		}
-		cellmap[key] = basic.NewCell(&Float{num})
+		(*cellmap)[key] = basic.NewCell(&Float{num})
 	case "bool", "boolean":
 		value = strings.ToLower(value)
 		if value == "true" || value == "false" {
 			if value == "true" {
-				cellmap[key] = basic.NewCell(&Boolean{true})
+				(*cellmap)[key] = basic.NewCell(&Boolean{true})
 			} else {
-				cellmap[key] = basic.NewCell(&Boolean{false})
+				(*cellmap)[key] = basic.NewCell(&Boolean{false})
 			}
 		} else {
 			return fmt.Errorf(value, "is not boolean")
 		}
 	}
-	dbinfo.Cellmap = cellmap
-	if len(cellmap) > BaseMapSize {
-		BaseMapSize = 2 * BaseMapSize
+	// dbinfo.Cellmap = cellmap
+	if len(*cellmap) > *BaseMapSize {
+		(*BaseMapSize) = 2 * (*BaseMapSize)
 		Save(dbinfo)
 	}
-	dbinfo.MapContaierSize = BaseMapSize
+	// dbinfo.MapContaierSize = BaseMapSize
 	return nil
 }
 func SetKeyValue(key string, value string, dbinfo *CustomDb) {
@@ -70,6 +72,7 @@ func GetKeys(keys string, dbinfo *CustomDb) (resbytes []byte) {
 	if strings.ContainsRune(keys, ' ') {
 		keysarr := strings.Split(keys, " ")
 		var buffres []byte
+		dbinfo.Mutex.RLock()
 		for _, ve := range keysarr {
 			if len(ve) > 0 {
 				buffres = GetKey(ve, dbinfo)
@@ -78,6 +81,7 @@ func GetKeys(keys string, dbinfo *CustomDb) (resbytes []byte) {
 				}
 			}
 		}
+		dbinfo.Mutex.RUnlock()
 	} else {
 		resstr = append(resstr, string(GetKey(keys, dbinfo)))
 	}
@@ -89,15 +93,19 @@ func GetKeys(keys string, dbinfo *CustomDb) (resbytes []byte) {
 }
 func GetAllKeysInterface(dbinfo *CustomDb) (res []byte) {
 	resmap := make(map[string][]byte)
-	for k, _ := range dbinfo.Cellmap {
+	dbinfo.Mutex.RLock()
+	for k := range dbinfo.Cellmap {
 		resmap[k] = GetKey(k, dbinfo)
 	}
+	dbinfo.Mutex.RUnlock()
 	res, _ = json.Marshal(&resmap)
 	return
 }
 func GetAllKeys(dbinfo *CustomDb) []byte {
 	res := []byte{}
-	for k, _ := range dbinfo.Cellmap {
+	dbinfo.Mutex.RLock()
+	defer dbinfo.Mutex.RUnlock()
+	for k := range dbinfo.Cellmap {
 		newres := fmt.Sprintf("%-60v %v", k, string(GetKey(k, dbinfo)))
 		res = append(res, []byte(newres)...)
 		res = append(res, '\n')
@@ -107,13 +115,15 @@ func GetAllKeys(dbinfo *CustomDb) []byte {
 
 // delete single key
 func DeleteKey(key string, dbinfo *CustomDb) {
-	cellmap := dbinfo.Cellmap
+	cellmap := &dbinfo.Cellmap
 	BaseMapSize := dbinfo.MapContaierSize
-	if _, ok := cellmap[key]; ok {
-		delete(cellmap, key)
+	dbinfo.Mutex.Lock()
+	defer dbinfo.Mutex.Unlock()
+	if _, ok := (*cellmap)[key]; ok {
+		delete((*cellmap), key)
 	}
-	dbinfo.Cellmap = cellmap
-	if BaseMapSize > 5 && len(cellmap) < BaseMapSize/2 {
+	// dbinfo.Cellmap = cellmap
+	if BaseMapSize > 5 && len(*cellmap) < BaseMapSize/2 {
 		if BaseMapSize/2 > 5 {
 			BaseMapSize = BaseMapSize / 2
 		} else {
@@ -126,6 +136,8 @@ func DeleteKey(key string, dbinfo *CustomDb) {
 
 // delete multipe keys
 func DeleteKeys(keys string, dbinfo *CustomDb) {
+	dbinfo.Mutex.Lock()
+	defer dbinfo.Mutex.Unlock()
 	if strings.ContainsRune(keys, ' ') {
 		keysarr := strings.Split(keys, " ")
 		for _, v := range keysarr {
@@ -140,13 +152,17 @@ func DeleteKeys(keys string, dbinfo *CustomDb) {
 
 // delete all keys
 func ClearAllKeys(dbinfo *CustomDb) {
+	dbinfo.Mutex.Lock()
+	defer dbinfo.Mutex.Unlock()
 	dbinfo.Cellmap = make(map[string]*basic.Cell)
 	Save(dbinfo)
 	dbinfo.MapContaierSize = 5
 }
 func FuzzyMatch(target string, dbinfo *CustomDb) []byte {
 	res := []byte{}
-	for k, _ := range dbinfo.Cellmap {
+	dbinfo.Mutex.RLock()
+	defer dbinfo.Mutex.RUnlock()
+	for k := range dbinfo.Cellmap {
 		if basic.Default_Fuzzy_Match_Func(target, k) {
 			newres := fmt.Sprintf("%-60v %v", k, string(GetKey(k, dbinfo)))
 			res = append(res, []byte(newres)...)

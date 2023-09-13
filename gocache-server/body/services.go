@@ -24,7 +24,38 @@ func processmsg(msg *Message) ([]byte, int, error) {
 		}
 		SetKeyValue(msg.Key, string(msg.Value), dbinfo)
 		return nil, 200, nil
-	case 2:
+	case 11: //compare and set key,return version
+		var dbinfo *CustomDb
+		if len(msg.Value) < 1 {
+			return nil, 400, fmt.Errorf("value is empty")
+		} else if len(msg.Key) < 1 {
+			return nil, 400, fmt.Errorf("key is empty")
+		} else if dbinfocopy, err := getDB(msg.DB); err == nil {
+			dbinfo = dbinfocopy
+		} else {
+			return nil, 400, err
+		}
+		var version_id uint32 = 0
+		content := GetKey(msg.Key, dbinfo)
+		if content == nil {
+			content = make([]byte, len(msg.Value)+2)
+			content[0] = 0
+			content[1] = 0
+			copy(content[2:], []byte(msg.Value))
+			SetKeyValue(msg.Key, string(content), dbinfo)
+		} else if len(content) >= 2 && string(content[2:]) != string(msg.Value) {
+			//update version
+			version_id = uint32(content[0])*256 + uint32(content[1])
+			version_id++
+			content[0] = byte(version_id / 256)
+			content[1] = byte(version_id % 256)
+			copy(content[2:], msg.Value)
+			SetKeyValue(msg.Key, string(content), dbinfo)
+		} else {
+			return nil, 400, fmt.Errorf("msg old value is not compareable")
+		}
+		return []byte{byte(version_id / 256), byte(version_id % 256)}, 200, nil
+	case 2: //get key
 		var dbinfo *CustomDb
 		if len(msg.Key) < 1 {
 			return nil, 400, fmt.Errorf("key is empty")

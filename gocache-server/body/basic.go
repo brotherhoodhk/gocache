@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gocache/basic"
 	"strconv"
+	"sync"
 )
 
 type String struct {
@@ -55,6 +56,7 @@ type CustomDb struct {
 	Cellmap         map[string]*basic.Cell
 	MapContaierSize int
 	Name            string
+	Mutex           sync.RWMutex
 }
 
 func NewCustomDB(dbname string) *CustomDb {
