@@ -91,6 +91,31 @@ func GetKeys(keys string, dbinfo *CustomDb) (resbytes []byte) {
 	}
 	return
 }
+func GetKeys_V2(keys string, dbinfo *CustomDb) (resbytes []byte) {
+	panic("not implment")
+	// resstr := []string{}
+	// if strings.ContainsRune(keys, ' ') {
+	// 	keysarr := strings.Split(keys, " ")
+	// 	var buffres []byte
+	// 	dbinfo.Mutex.RLock()
+	// 	for _, ve := range keysarr {
+	// 		if len(ve) > 0 {
+	// 			buffres = GetKey(ve, dbinfo)
+	// 			if buffres != nil {
+	// 				resstr = append(resstr, string(buffres))
+	// 			}
+	// 		}
+	// 	}
+	// 	dbinfo.Mutex.RUnlock()
+	// } else {
+	// 	resstr = append(resstr, string(GetKey(keys, dbinfo)))
+	// }
+	// tibytes, err := json.Marshal(&resstr)
+	// if err == nil {
+	// 	resbytes = tibytes
+	// }
+	return
+}
 func GetAllKeysInterface(dbinfo *CustomDb) (res []byte) {
 	resmap := make(map[string][]byte)
 	dbinfo.Mutex.RLock()
@@ -101,6 +126,15 @@ func GetAllKeysInterface(dbinfo *CustomDb) (res []byte) {
 	res, _ = json.Marshal(&resmap)
 	return
 }
+func GetAllKeysInterface_V2(dbinfo *CustomDb) map[string][]byte {
+	resmap := make(map[string][]byte)
+	dbinfo.Mutex.RLock()
+	for k := range dbinfo.Cellmap {
+		resmap[k] = GetKey(k, dbinfo)
+	}
+	dbinfo.Mutex.RUnlock()
+	return resmap
+}
 func GetAllKeys(dbinfo *CustomDb) []byte {
 	res := []byte{}
 	dbinfo.Mutex.RLock()
@@ -109,6 +143,15 @@ func GetAllKeys(dbinfo *CustomDb) []byte {
 		newres := fmt.Sprintf("%-60v %v", k, string(GetKey(k, dbinfo)))
 		res = append(res, []byte(newres)...)
 		res = append(res, '\n')
+	}
+	return res
+}
+func GetAllKeys_V2(dbinfo *CustomDb) map[string][]byte {
+	res := make(map[string][]byte)
+	dbinfo.Mutex.RLock()
+	defer dbinfo.Mutex.RUnlock()
+	for k := range dbinfo.Cellmap {
+		res[k] = GetKey(k, dbinfo)
 	}
 	return res
 }
@@ -167,6 +210,17 @@ func FuzzyMatch(target string, dbinfo *CustomDb) []byte {
 			newres := fmt.Sprintf("%-60v %v", k, string(GetKey(k, dbinfo)))
 			res = append(res, []byte(newres)...)
 			res = append(res, '\n')
+		}
+	}
+	return res
+}
+func FuzzyMatch_V2(target string, dbinfo *CustomDb) map[string][]byte {
+	res := make(map[string][]byte)
+	dbinfo.Mutex.RLock()
+	defer dbinfo.Mutex.RUnlock()
+	for k := range dbinfo.Cellmap {
+		if basic.Default_Fuzzy_Match_Func(target, k) {
+			res[k] = GetKey(k, dbinfo)
 		}
 	}
 	return res

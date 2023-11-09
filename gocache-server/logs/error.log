@@ -1,0 +1,33 @@
+[error]2023/09/12 06:53:09 prepare.go:36: EOF
+[error]2023/09/12 06:53:09 prepare.go:43: unexpected end of JSON input
+[error]2023/09/12 06:53:29 server.go:30: EOF
+[error]2023/09/12 06:53:29 server.go:30: EOF
+[error]2023/09/12 07:08:02 server.go:30: EOF
+[error]2023/09/12 07:10:39 server.go:30: EOF
+[error]2023/09/12 07:13:34 server.go:30: EOF
+[error]2023/09/12 07:19:27 server.go:30: EOF
+[error]2023/09/12 07:49:36 server.go:30: EOF
+[error]2023/09/12 07:56:49 server.go:30: EOF
+[error]2023/09/12 08:03:35 server.go:30: EOF
+[error]2023/09/12 08:04:56 server.go:30: EOF
+[error]2023/09/12 08:06:50 server.go:30: EOF
+[error]2023/11/09 04:15:17 prepare.go:36: EOF
+[error]2023/11/09 04:15:17 prepare.go:43: unexpected end of JSON input
+[error]2023/11/09 04:16:57 prepare.go:36: EOF
+[error]2023/11/09 04:16:57 prepare.go:43: unexpected end of JSON input
+[error]2023/11/09 04:17:06 main.go:65: accept tcp [::]:8001: use of closed network connection
+[error]2023/11/09 04:17:23 prepare.go:36: EOF
+[error]2023/11/09 04:17:23 prepare.go:43: unexpected end of JSON input
+[error]2023/11/09 04:17:25 main.go:65: accept tcp [::]:8001: use of closed network connection
+[error]2023/11/09 04:19:35 prepare.go:36: EOF
+[error]2023/11/09 04:19:35 prepare.go:43: unexpected end of JSON input
+[error]2023/11/09 09:45:29 prepare.go:36: EOF
+[error]2023/11/09 09:45:29 prepare.go:43: unexpected end of JSON input
+[error]2023/11/09 09:47:01 prepare.go:36: EOF
+[error]2023/11/09 09:47:01 prepare.go:43: unexpected end of JSON input
+[error]2023/11/09 09:48:23 main.go:65: accept tcp [::]:8001: use of closed network connection
+[error]2023/11/09 11:21:21 prepare.go:36: EOF
+[error]2023/11/09 11:21:21 prepare.go:43: unexpected end of JSON input
+[error]2023/11/09 11:23:05 main.go:65: accept tcp [::]:8001: use of closed network connection
+[error]2023/11/09 11:26:41 prepare.go:36: EOF
+[error]2023/11/09 11:26:41 prepare.go:43: unexpected end of JSON input

@@ -3,18 +3,20 @@ package main
 import (
 	"encoding/xml"
 	"fmt"
-	"github.com/oswaldoooo/octools/toolsbox"
 	"gocache/body"
 	"io/ioutil"
 	"net"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
+	"os/signal"
 	"strconv"
+
+	"github.com/oswaldoooo/octools/toolsbox"
 )
 
 var listenport = 8001
-var ROOTPATH = os.Getenv("GOCACHE_HOME")
+var ROOTPATH = "."
 var errorlog = toolsbox.LogInit("error", ROOTPATH+"/logs/error.log")
 
 type confinfo struct {
@@ -49,12 +51,22 @@ func main() {
 	}
 	go http.ListenAndServe(":9999", nil)
 	fmt.Println("start listen at ", listenport)
+	ch := make(chan os.Signal)
+	signal.Notify(ch, os.Interrupt)
+	go func() {
+		<-ch
+		listener.Close()
+		fmt.Println("\ngocache exit with safety")
+		os.Exit(1)
+	}()
 	for {
 		con, err := listener.Accept()
 		if err != nil {
 			errorlog.Println(err)
+		} else {
+			go body.Process_V2(con)
 		}
-		defer con.Close()
-		go body.Process(con)
+		// go body.Process(con)
+
 	}
 }

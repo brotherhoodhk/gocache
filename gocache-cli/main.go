@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	driver_tools_v2 "github.com/oswaldoooo/gocache-driver/v2"
 	"github.com/oswaldoooo/octools/toolsbox"
 )
 
@@ -19,7 +20,7 @@ const (
 )
 
 var address string
-var ROOTPATH = os.Getenv("GOCACHECLI_HOME")
+var ROOTPATH = "."
 var default_db = DEFAULT_DB
 
 const (
@@ -48,14 +49,15 @@ func main() {
 		return
 	}
 	mes := new(Message)
-	acp := new(ReplayStatus)
+	// acp := new(ReplayStatus)
+	acp_v2 := make(map[string]any)
 	mes.DB = default_db
-	var buff = make([]byte, 10*KB)
+	// var buff = make([]byte, 10*KB)
 	for {
 		mes.Act = -1
 		mes.Key = ""
 		mes.Value = nil
-		acp = &ReplayStatus{}
+		// acp = &ReplayStatus{}
 		fmt.Print("console-> ")
 		read := bufio.NewReader(os.Stdout)
 		msg, _ := read.ReadString('\n')
@@ -91,27 +93,48 @@ func main() {
 		if err != nil {
 			fmt.Println(err)
 		} else {
-			sendbytes, err := json.Marshal(mes)
+			acp_v2, err = Do(con, mes)
 			if err != nil {
-				fmt.Println(err)
+				fmt.Fprintln(os.Stderr, err.Error())
 			} else {
-			senddata:
-				_, err = con.Write(sendbytes)
-				if err != nil {
-					fmt.Println("\n[error] lost connection with host")
-					os.Exit(1)
+				for k, ele := range acp_v2 {
+					fmt.Println(k, ele)
 				}
-				ReadReply(con, buff, acp)
-				switch acp.StatusCode {
-				case 500:
-					goto senddata
-				case 200:
-					if mes.Act == 2 || mes.Act == 21 {
-						fmt.Println(string(acp.Content))
-					}
-					continue
-				case 400:
-					fmt.Println("error 400", string(acp.Content))
+			}
+			// sendbytes, err := json.Marshal(mes)
+			// if err != nil {
+			// 	fmt.Println(err)
+			// } else {
+			// senddata:
+			// 	_, err = con.Write(sendbytes)
+			// 	if err != nil {
+			// 		fmt.Println("\n[error] lost connection with host")
+			// 		os.Exit(1)
+			// 	}
+			// 	ReadReply(con, buff, acp)
+			// 	switch acp.StatusCode {
+			// 	case 500:
+			// 		goto senddata
+			// 	case 200:
+			// 		if mes.Act == 2 || mes.Act == 21 {
+			// 			fmt.Println(string(acp.Content))
+			// 		}
+			// 		continue
+			// 	case 400:
+			// 		fmt.Println("error 400", string(acp.Content))
+			// 	}
+			// }
+
+			//v2 edition
+			err = driver_tools_v2.WriteTo(con, uint8(mes.Act), mes)
+			if err == nil {
+				err = driver_tools_v2.ReadFrom(con, &acp_v2)
+				if err == nil {
+
+				} else if err == io.EOF {
+					//close connection
+				} else {
+					fmt.Fprintln(os.Stderr, "\n[error]", err.Error())
 				}
 			}
 		}
@@ -224,4 +247,17 @@ type ReplayStatus struct {
 	Content    []byte `json:"content"`
 	StatusCode int    `json:"code"`
 	Type       string `json:"type"`
+}
+
+// services
+func Do(in io.ReadWriter, mes *Message) (map[string]any, error) {
+	var (
+		ans map[string]any = make(map[string]any)
+		err error
+	)
+	err = driver_tools_v2.WriteTo(in, uint8(mes.Act), mes)
+	if err == nil {
+		err = driver_tools_v2.ReadFrom(in, &ans)
+	}
+	return ans, err
 }

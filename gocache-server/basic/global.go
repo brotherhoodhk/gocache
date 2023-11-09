@@ -14,6 +14,8 @@ var Default_Fuzzy_Match_Func func(string, string) bool = comparesimple
 var Default_Get_Type_Func func(string) string = getcontenttype
 var AddtionalCommand = make(map[int]func(key string, db string, val []byte) ([]byte, int, error)) //扩展功能池
 var Fuzzy_Match_Func_Pool = make(map[string]func(target, tocompare string) bool)
+var AddtionalCommand_V2 = make(map[uint8]Method) //扩展功能池
+type Method func(key string, db string, val []byte) (map[string]any, error)
 
 func comparesimple(origin, tocompare string) bool {
 	return datastore.Comparestr(origin, tocompare, CompareRate)

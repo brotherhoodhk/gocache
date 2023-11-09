@@ -32,7 +32,7 @@ func init() {
 	fmt.Println("==========start init basic zone==========")
 	content, err := ioutil.ReadFile(ROOTPATH + "/conf/conf.xml")
 	if err != nil {
-		fmt.Println("cant find the conf.xml")
+		fmt.Println("cant find the conf.xml", err.Error())
 		os.Exit(1)
 	}
 	bcinfo := new(basicconf)

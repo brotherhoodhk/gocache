@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net"
 )
 
@@ -50,6 +51,26 @@ func Process(Con net.Conn) {
 			}
 		}
 	}
+}
+func Process_V2(con io.ReadWriteCloser) {
+	var (
+		code uint8
+		p    []byte
+		err  error
+	)
+	for {
+		code, p, err = Read_V2(con)
+		if err == nil {
+			code, p, err = processmsg_v2(code, p)
+			if err == nil {
+				err = Write_V2(con, code, p)
+			}
+		}
+		if err != nil {
+			break
+		}
+	}
+	con.Close()
 }
 func sendreply(Con net.Conn, resp *ReplayStatus) bool {
 	resbytes, err := json.Marshal(resp)

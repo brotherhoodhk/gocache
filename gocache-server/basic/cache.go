@@ -2,11 +2,10 @@ package basic
 
 import (
 	"math/rand"
-	"os"
 	"time"
 )
 
-var ROOTPATH = os.Getenv("GOCACHE_HOME")
+var ROOTPATH = "."
 
 // the bottom of all cache system
 type Cache struct {

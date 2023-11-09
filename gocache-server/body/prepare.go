@@ -13,7 +13,7 @@ import (
 
 var ballast = make([]byte, 300*MB)
 var globaldb = NewCustomDB("origin_data")
-var ROOTPATH = os.Getenv("GOCACHE_HOME")
+var ROOTPATH = "."
 var errorlog = toolsbox.LogInit("error", ROOTPATH+"/logs/error.log")
 
 var datapath = ROOTPATH + "/data/"
