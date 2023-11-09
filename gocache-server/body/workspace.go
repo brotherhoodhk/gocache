@@ -91,29 +91,24 @@ func GetKeys(keys string, dbinfo *CustomDb) (resbytes []byte) {
 	}
 	return
 }
-func GetKeys_V2(keys string, dbinfo *CustomDb) (resbytes []byte) {
-	panic("not implment")
-	// resstr := []string{}
-	// if strings.ContainsRune(keys, ' ') {
-	// 	keysarr := strings.Split(keys, " ")
-	// 	var buffres []byte
-	// 	dbinfo.Mutex.RLock()
-	// 	for _, ve := range keysarr {
-	// 		if len(ve) > 0 {
-	// 			buffres = GetKey(ve, dbinfo)
-	// 			if buffres != nil {
-	// 				resstr = append(resstr, string(buffres))
-	// 			}
-	// 		}
-	// 	}
-	// 	dbinfo.Mutex.RUnlock()
-	// } else {
-	// 	resstr = append(resstr, string(GetKey(keys, dbinfo)))
-	// }
-	// tibytes, err := json.Marshal(&resstr)
-	// if err == nil {
-	// 	resbytes = tibytes
-	// }
+func GetKeys_V2(keys string, dbinfo *CustomDb) (resstr map[string][]byte) {
+	resstr = make(map[string][]byte)
+	if strings.ContainsRune(keys, ' ') {
+		keysarr := strings.Split(keys, " ")
+		var buffres []byte
+		dbinfo.Mutex.RLock()
+		for _, ve := range keysarr {
+			if len(ve) > 0 {
+				buffres = GetKey(ve, dbinfo)
+				if buffres != nil {
+					resstr[ve] = buffres
+				}
+			}
+		}
+		dbinfo.Mutex.RUnlock()
+	} else {
+		resstr[keys] = GetKey(keys, dbinfo)
+	}
 	return
 }
 func GetAllKeysInterface(dbinfo *CustomDb) (res []byte) {

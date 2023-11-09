@@ -31,6 +31,15 @@ func main() {
 		} else {
 			fmt.Fprintln(os.Stderr, "[error]", err.Error())
 		}
+		var ansbytes [][]byte
+		ansbytes, err = db.GetKeys("halo")
+		if err == nil {
+			for _, ele := range ansbytes {
+				fmt.Println(string(ele))
+			}
+		} else {
+			fmt.Fprintln(os.Stderr, "[error]", err.Error())
+		}
 		var ans map[string][]byte
 		ans, err = db.GetAllKeys()
 		if err == nil {

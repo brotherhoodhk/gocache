@@ -311,21 +311,19 @@ func processmsg_v2(code uint8, rawcontent []byte) (ans_code uint8, p []byte, err
 		}
 		ans_code = OK
 	case 32: //not implment
-		ans_code = ERROR
-		ans_map["error"] = "not implment this interface"
-		// var dbinfo *CustomDb
-		// if len(msg.Key) < 1 {
-		// 	ans_code = ERROR
-		// 	ans_map["error"] = "key is empty"
-		// } else if dbinfocopy, err := getDB(msg.DB); err == nil {
-		// 	dbinfo = dbinfocopy
-
-		// } else {
-		// 	ans_code = ERROR
-		// 	ans_map["error"] = err.Error()
-		// }
-		// // fmt.Println(string(GetKeys(msg.Key, dbinfo)))
-		// return GetKeys(msg.Key, dbinfo), 200, nil
+		var dbinfo *CustomDb
+		if len(msg.Key) < 1 {
+			ans_code = ERROR
+			ans_map["error"] = "key is empty"
+		} else if dbinfocopy, err := getDB(msg.DB); err == nil {
+			ans_code = OK
+			dbinfo = dbinfocopy
+			ans_map = utils.TransMap(GetKeys_V2(msg.Key, dbinfo))
+		} else {
+			ans_code = ERROR
+			ans_map["error"] = err.Error()
+		}
+		errorlog.Println(err, len(ans_map))
 	case 34:
 		//驱动接口获得全部键
 		var dbinfo *CustomDb
